@@ -15,12 +15,14 @@ import {
   Repository,
   UserResponse,
 } from './types';
-import Storage from './Storage';
+console.log("000")
 
-const apiToken = process.env.GITHUB_TOKEN;
-
+//const apiToken = process.env.GITHUB_TOKEN;
+const apiToken = 'GITHUB API HERE'
+console.log("001")
+if (!apiToken) console.log( 'please define "GITHUB_TOKEN" env variable');
 if (!apiToken) throw 'please define "GITHUB_TOKEN" env variable';
-
+console.log("001")
 const github = new GitHub({
   token: apiToken,
 });
@@ -31,23 +33,26 @@ export class Crawler {
   crawlType?: CrawlType;
   repositories: Dict<Repository> = {};
   position?: CrawlPosition;
-  storage: Storage;
+  
   lastData?: string;
   hasChanged: boolean = false;
 
-  constructor(userId: string, userLogin: string, storage: Storage) {
+  constructor(userId: string, userLogin: string) {
     this.userId = userId;
     this.userLogin = userLogin;
-    this.storage = storage;
+ 
     console.log('GitHub API-Token', apiToken);
   }
 
   static async create(login: string): Promise<Crawler> {
-    const storage = await Storage.create();
+    console.log("01")
     const id = await this.getIdFromUser(login);
-    const crawler = new Crawler(id, login, storage);
+    const crawler = new Crawler(id, login);
+    console.log("02")
     await crawler.restore();
+    console.log("03")
     await crawler.init();
+    console.log("04")
     return crawler;
   }
 
@@ -66,31 +71,34 @@ export class Crawler {
   }
 
   async save(position?: CrawlPosition) {
-    const dataStr = JSON.stringify({
-      position,
-      repositories: this.repositories,
-      crawlType: this.crawlType,
-    });
-    const hasChanged = this.lastData !== dataStr;
-    if (hasChanged) {
-      this.lastData = dataStr;
-      await this.storage.writeItem(this.userId, dataStr);
-    } else {
-      console.log('skipped writing - no changes detected');
-    }
-    this.hasChanged = this.hasChanged || hasChanged;
-    return hasChanged;
+    // const dataStr = JSON.stringify({
+    //   position,
+    //   repositories: this.repositories,
+    //   crawlType: this.crawlType,
+    // });
+    // const hasChanged = this.lastData !== dataStr;
+    // if (hasChanged) {
+    //   this.lastData = dataStr;
+    //   await this.storage.writeItem(this.userId, dataStr);
+    // } else {
+    //   console.log('skipped writing - no changes detected');
+    // }
+    // this.hasChanged = this.hasChanged || hasChanged;
+    // return hasChanged;
+    console.log("save crawler line 68")
+    return true;
   }
 
   async restore() {
-    const dataStr = await this.storage.readItem(this.userId);
-    if (dataStr) {
-      const data: CrawlState = JSON.parse(dataStr);
-      this.lastData = dataStr;
-      this.repositories = data.repositories;
-      this.crawlType = data.crawlType;
-      this.position = data.position;
-    }
+    // const dataStr = await this.storage.readItem(this.userId);
+    // if (dataStr) {
+    //   const data: CrawlState = JSON.parse(dataStr);
+    //   this.lastData = dataStr;
+    //   this.repositories = data.repositories;
+    //   this.crawlType = data.crawlType;
+    //   this.position = data.position;
+    // }
+    console.log("restore crawler line 87")
   }
 
   async initRepositories() {
@@ -213,6 +221,7 @@ export class Crawler {
         }
       }
     `);
+    console.log("06")
     return response.user.id;
   }
 
@@ -239,6 +248,7 @@ export class Crawler {
         repositories[repo.key] = repo;
       }
     }
+    console.log("07")
     return repositories;
   }
 
@@ -271,6 +281,7 @@ export class Crawler {
         }
       }
     `);
+    console.log("08")
     return response.user.repositories;
   }
 
@@ -291,6 +302,7 @@ export class Crawler {
         };
       }
     }
+    console.log("09")
     return branches;
   }
 
@@ -319,6 +331,7 @@ export class Crawler {
         }
       }
     `);
+    console.log("010")
     return response.repository.refs;
   }
 
@@ -356,6 +369,7 @@ export class Crawler {
         });
       }
     }
+    console.log("011")
     return commits;
   }
 
@@ -392,6 +406,7 @@ export class Crawler {
       }
     `;
     const response: HistoryPageResponse = await github.query(query);
+    console.log("012")
     if (response.repository.ref) {
       return response.repository.ref.target.history;
     }

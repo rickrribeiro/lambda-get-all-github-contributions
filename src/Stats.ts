@@ -8,12 +8,13 @@ import {
   CommitStats,
   RepositoryStats,
 } from './types';
-import Storage from './Storage';
+import * as fs from 'fs';
+console.log("100")
 import Crawler from './Crawler';
 
 export class Stats {
   crawler: Crawler;
-  storage: Storage;
+ 
   stats: StatsData = {
     total: {
       closed: Stats.emptyCounts,
@@ -35,9 +36,9 @@ export class Stats {
   };
   nextPrivateId: number = 0;
 
-  constructor(crawler: Crawler, storage: Storage) {
+  constructor(crawler: Crawler) {
     this.crawler = crawler;
-    this.storage = storage;
+    console.log("101")
   }
 
   get statsId() {
@@ -76,8 +77,8 @@ export class Stats {
   }
 
   static async create(crawler: Crawler): Promise<Stats> {
-    const storage = await Storage.create();
-    const stats = new Stats(crawler, storage);
+
+    const stats = new Stats(crawler);
     await stats.init();
     return stats;
   }
@@ -186,7 +187,13 @@ export class Stats {
 
   async save() {
     console.log(`Save stats`);
-    return await this.storage.writeItem(this.statsId, JSON.stringify(this.stats));
+    fs.writeFile('file.txt', JSON.stringify(this.stats),  function(err) {
+      if (err) {
+          return console.error(err);
+      }
+      console.log("File created!");
+  });
+    return "File created"
   }
 }
 
